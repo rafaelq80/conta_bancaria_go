@@ -8,20 +8,20 @@ import (
 )
 
 type ContaController struct {
-	contas []interface{}
+	contas      []interface{}
 	numeroAtual int
 }
 
 func NewContaController() repository.IContaRepository {
 	return &ContaController{
-		contas: make([]interface{}, 0),
+		contas:      make([]interface{}, 0),
 		numeroAtual: 0,
 	}
 
 }
 
 func (cc *ContaController) Criar(conta interface{}) error {
-	if !isValidAccountType(conta) {
+	if !validarConta(conta) {
 		return errors.New("tipo de conta inválido")
 	}
 
@@ -37,6 +37,10 @@ func (cc *ContaController) Criar(conta interface{}) error {
 	return nil
 }
 
+func (cc *ContaController) ListarTodas() ([]interface{}, error) {
+	return cc.contas, nil
+}
+
 func (cc *ContaController) BuscarPorNumero(numero int) (interface{}, error) {
 	for _, conta := range cc.contas {
 		if getNumero(conta) == numero {
@@ -47,7 +51,7 @@ func (cc *ContaController) BuscarPorNumero(numero int) (interface{}, error) {
 }
 
 func (cc *ContaController) Atualizar(conta interface{}) error {
-	if !isValidAccountType(conta) {
+	if !validarConta(conta) {
 		return errors.New("tipo de conta inválido")
 	}
 	numero := getNumero(conta)
@@ -68,12 +72,80 @@ func (cc *ContaController) Deletar(numero int) error {
 			return nil
 		}
 	}
-	
+
 	return errors.New("conta não encontrada")
 }
 
-func (cc *ContaController) ListarTodas() ([]interface{}, error) {
-	return cc.contas, nil
+func (cc *ContaController) Sacar(numero int, valor float64) error {
+	for _, conta := range cc.contas {
+		if getNumero(conta) == numero {
+
+			switch c := conta.(type) {
+			case *model.ContaCorrente:
+				c.Sacar(valor)
+				return nil
+			case *model.ContaPoupanca:
+				c.Sacar(valor)
+				return nil
+			}
+
+		}
+	}
+	return errors.New("conta não encontrada")
+}
+
+func (cc *ContaController) Depositar(numero int, valor float64) error {
+	for _, conta := range cc.contas {
+		if getNumero(conta) == numero {
+
+			switch c := conta.(type) {
+			case *model.ContaCorrente:
+				c.Depositar(valor)
+				return nil
+			case *model.ContaPoupanca:
+				c.Depositar(valor)
+				return nil
+			}
+
+		}
+	}
+	return errors.New("conta não encontrada")
+}
+
+func (cc *ContaController) Transferir(numeroOrigem, numeroDestino int, valor float64) error {
+
+	contaOrigem, err := cc.BuscarPorNumero(numeroOrigem)
+	if err != nil {
+		return errors.New("conta de origem não encontrada")
+	}
+
+	contaDestino, err := cc.BuscarPorNumero(numeroDestino)
+	if err != nil {
+		return errors.New("conta de destino não encontrada")
+	}
+
+	var resposta bool
+
+	switch co := contaOrigem.(type) {
+	case *model.ContaCorrente:
+		resposta = co.Sacar(valor)
+	case *model.ContaPoupanca:
+		resposta = co.Sacar(valor)
+	}
+
+	if resposta == true {
+		switch cd := contaDestino.(type) {
+		case *model.ContaCorrente:
+			cd.Depositar(valor)
+		case *model.ContaPoupanca:
+			cd.Depositar(valor)
+		}
+	}else{
+		return errors.New("erro ao efetuar a transferência")
+	}
+
+	return nil
+
 }
 
 // Funções auxiliares
@@ -81,16 +153,16 @@ func (cc *ContaController) ListarTodas() ([]interface{}, error) {
 func getNumero(conta interface{}) int {
 
 	switch c := conta.(type) {
-		case *model.ContaCorrente:
-			return c.GetNumero()
-		case *model.ContaPoupanca:
-			return c.GetNumero()
-		default:
-			panic("tipo de conta inválido")
+	case *model.ContaCorrente:
+		return c.GetNumero()
+	case *model.ContaPoupanca:
+		return c.GetNumero()
+	default:
+		panic("tipo de conta inválido")
 	}
 }
 
-func isValidAccountType(conta interface{}) bool {
+func validarConta(conta interface{}) bool {
 	switch conta.(type) {
 	case model.ContaCorrente, *model.ContaCorrente, model.ContaPoupanca, *model.ContaPoupanca:
 		return true

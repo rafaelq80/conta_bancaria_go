@@ -1,7 +1,9 @@
 package model
 
 import (
-    "fmt"
+	"fmt"
+
+	"github.com/fatih/color"
 )
 
 // Classe base Conta
@@ -68,12 +70,17 @@ func (c *Conta) SetSaldo(saldo float64) {
 
 // Método para sacar
 func (c *Conta) Sacar(valor float64) bool {
+
     if valor > c.saldo {
+
+        color.Set(color.FgRed)
         fmt.Println("\nSaldo insuficiente!")
+        color.Unset()
+
         return false
     }
-    c.saldo -= valor
-    fmt.Printf("\nSaque de R$ %.2f realizado com sucesso. \nNovo Saldo da Conta: R$ %.2f\n", valor, c.saldo)
+
+    c.saldo -= valor 
     return true
 }
 
@@ -100,5 +107,5 @@ func (c *Conta) Visualizar() {
     fmt.Printf("\nNúmero da Agência: %d", c.agencia)
     fmt.Printf("\nTipo da Conta: %s", tipo)
     fmt.Printf("\nTitular da Conta: %s", c.titular)
-    fmt.Printf("\nSaldo da Conta: %.2f \n", c.saldo)
+    fmt.Printf("\nSaldo da Conta: R$ %.2f \n", c.saldo)
 }

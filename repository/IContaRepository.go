@@ -8,4 +8,7 @@ type IContaRepository interface {
 	Deletar(numero int) error
 	ListarTodas() ([]interface{}, error)
 
+	Sacar(numero int, valor float64) error
+	Depositar(numero int, valor float64) error
+	Transferir(numeroOrigem, numeroDestino int, valor float64) error
 }
