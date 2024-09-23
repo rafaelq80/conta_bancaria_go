@@ -14,9 +14,9 @@ type Conta struct {
 }
 
 // Construtor para criar uma nova Conta
-func NewConta(numero, agencia, tipo int, titular string, saldo float64) *Conta {
+func NewConta(agencia, tipo int, titular string, saldo float64) *Conta {
     return &Conta{
-        numero:  numero,
+        //numero:  numero,
         agencia: agencia,
         tipo:    tipo,
         titular: titular,

@@ -6,35 +6,49 @@ import (
 	"os"
 
 	"github.com/fatih/color"
+	"github.com/rafaelq80/conta_bancaria_go/controller"
 	"github.com/rafaelq80/conta_bancaria_go/model"
 )
 
 func main() {
 
+	reader := bufio.NewReader(os.Stdin)
+
 	var opcao = 0
+	var numero, agencia, tipo, aniversario int
+	var saldo, limite float64
+	var titular string
 
-	c := model.NewConta(1, 123, 1, "João da Silva", 1000.00)
-	c.Visualizar()
-	c.Sacar(100.00)
-	fmt.Printf("\nSaldo: %.2f", c.GetSaldo())
-	c.Depositar(300.00)
-	fmt.Printf("\nSaldo: %.2f", c.GetSaldo())
+	contaController := controller.NewContaController()
 
-	cc := model.NewContaCorrente(2, 123, 1, "João da Silva", 1000.00, 500.00)
-	cc.Visualizar()
-	cc.Sacar(1100.00)
-	fmt.Printf("\nSaldo: %.2f", cc.GetSaldo())
-	cc.Depositar(300.00)
-	fmt.Printf("\nSaldo: %.2f", cc.GetSaldo())
-	cc.Sacar(800.00)
-	fmt.Printf("\nSaldo: %.2f", cc.GetSaldo())
+	contaController.Criar(model.NewContaCorrente(0, 123, 1, "João da Silva", 1000.00, 100.00))
+	contaController.Criar(model.NewContaCorrente(0, 456, 1, "Maria dos Santos", 2900.00, 300.00))
 
-	cp := model.NewContaPoupanca(3, 123, 2, "João da Silva", 1000.00, 10)
-	cp.Visualizar()
-	cp.Sacar(1100.00)
-	fmt.Printf("\nSaldo: %.2f", cp.GetSaldo())
-	cp.Depositar(300.00)
-	fmt.Printf("\nSaldo: %.2f", cp.GetSaldo())
+	contaController.Criar(model.NewContaPoupanca(0, 789, 2, "Giovanna Benvenutti", 3200.00, 10))
+	contaController.Criar(model.NewContaPoupanca(0, 123, 2, "Karina Girardini", 2000.00, 15))
+
+	// c := model.NewConta(1, 123, 1, "João da Silva", 1000.00)
+	// c.Visualizar()
+	// c.Sacar(100.00)
+	// fmt.Printf("\nSaldo: %.2f", c.GetSaldo())
+	// c.Depositar(300.00)
+	// fmt.Printf("\nSaldo: %.2f", c.GetSaldo())
+
+	// cc := model.NewContaCorrente(2, 123, 1, "João da Silva", 1000.00, 500.00)
+	// cc.Visualizar()
+	// cc.Sacar(1100.00)
+	// fmt.Printf("\nSaldo: %.2f", cc.GetSaldo())
+	// cc.Depositar(300.00)
+	// fmt.Printf("\nSaldo: %.2f", cc.GetSaldo())
+	// cc.Sacar(800.00)
+	// fmt.Printf("\nSaldo: %.2f", cc.GetSaldo())
+
+	// cp := model.NewContaPoupanca(3, 123, 2, "João da Silva", 1000.00, 10)
+	// cp.Visualizar()
+	// cp.Sacar(1100.00)
+	// fmt.Printf("\nSaldo: %.2f", cp.GetSaldo())
+	// cp.Depositar(300.00)
+	// fmt.Printf("\nSaldo: %.2f", cp.GetSaldo())
 
 	for true {
 
@@ -59,8 +73,8 @@ func main() {
 		fmt.Println("*****************************************************")
 		fmt.Println("                                                     ")
 
-		fmt.Println("Entre com a opção desejada: ")
-		
+		fmt.Println("Digite a opção desejada: ")
+
 		color.Unset()
 
 		fmt.Scanln(&opcao)
@@ -81,6 +95,42 @@ func main() {
 
 			/* CHAMADA DO MÉTODO CRIAR CONTA */
 
+			fmt.Println("Digite o número da agência: ")
+			fmt.Scanln(&agencia)
+
+			fmt.Println("Digite o tipo da conta (1-CC | 2-CP): ")
+			fmt.Scanln(&tipo)
+
+			fmt.Println("Digite o nome do titular da conta: ")
+			titular, _ = reader.ReadString('\n')
+
+			fmt.Println("Digite o saldo da conta: ")
+			fmt.Scanln(&saldo)
+
+			switch (tipo) {
+				case 1:
+
+					fmt.Println("Digite o limite da conta: ")
+					fmt.Scanln(&limite)
+			
+					resposta := contaController.Criar(model.NewContaCorrente(0, agencia, tipo, titular, saldo, limite))
+
+					if resposta == nil {
+						fmt.Println("Conta Corrente criada com sucesso!")
+					}
+
+				case 2:
+
+					fmt.Println("Digite o dia do aniversário da conta: ")
+					fmt.Scanln(&aniversario)
+
+					contaController.Criar(model.NewContaPoupanca(0, agencia, tipo, titular, saldo, aniversario))
+
+					fmt.Println("Conta Poupança criada com sucesso!")
+
+			}
+
+
 			keyPress()
 		case 2:
 			color.Set(color.FgYellow, color.Bold)
@@ -89,6 +139,24 @@ func main() {
 
 			/* CHAMADA DO MÉTODO LISTAR TODAS AS CONTAS */
 
+			contas, err := contaController.ListarTodas()
+
+			if err != nil {
+				fmt.Println("Error:", err)
+				return
+			}
+
+			for _, conta := range contas {
+				switch c := conta.(type) {
+				case *model.ContaCorrente:
+					c.Visualizar()
+				case *model.ContaPoupanca:
+					c.Visualizar()
+				default:
+					fmt.Println("\nTipo de Conta Inválida")
+				}
+			}
+
 			keyPress()
 		case 3:
 			color.Set(color.FgYellow, color.Bold)
@@ -96,6 +164,25 @@ func main() {
 			color.Unset()
 
 			/* CHAMADA DO MÉTODO CONSULTAR CONTA PELO NÚMERO */
+
+			fmt.Println("Digite o número da conta: ")
+			fmt.Scanln(&numero)
+
+			conta, err := contaController.BuscarPorNumero(numero)
+
+			if err != nil {
+				fmt.Println("Error:", err)
+				return
+			}
+
+			switch c := conta.(type) {
+			case *model.ContaCorrente:
+				c.Visualizar()
+			case *model.ContaPoupanca:
+				c.Visualizar()
+			default:
+				fmt.Println("\nTipo de Conta Inválida")
+			}
 
 			keyPress()
 		case 4:

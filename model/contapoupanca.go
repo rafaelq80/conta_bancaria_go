@@ -37,5 +37,5 @@ func (cc *ContaPoupanca) SetAniversario(aniversario int) {
 // Sobrescrita do método Visualizar para ContaPoupanca
 func (cc *ContaPoupanca) Visualizar() {
     cc.Conta.Visualizar() // Chama o método da conta base
-    fmt.Printf("aniversario da Conta: %d \n", cc.aniversario)
+    fmt.Printf("Aniversário da Conta: %d \n", cc.aniversario)
 }
