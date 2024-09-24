@@ -9,28 +9,28 @@ import (
 
 // ContaController implementa a Interface IContaRepository
 type ContaController struct {
-	contas      []Conta
+	contas      []IConta
 	numeroAtual int
 }
 
 // Conta interface - Simula Polimorfismo
-type Conta interface {
+type IConta interface {
 	GetNumero() int
 	SetNumero(int)
 	Sacar(float64) bool
 	Depositar(float64)
 }
 
-// Método Cosbtrutor ContaController
+// Método Consbtrutor ContaController
 func NewContaController() repository.IContaRepository {
 	return &ContaController{
-		contas:      make([]Conta, 0),
+		contas:      make([]IConta, 0),
 		numeroAtual: 0,
 	}
 }
 
 func (cc *ContaController) Criar(conta interface{}) error {
-	c, ok := conta.(Conta)
+	c, ok := conta.(IConta)
 	if !ok {
 		return errors.New("tipo de conta inválido")
 	}
@@ -59,7 +59,7 @@ func (cc *ContaController) BuscarPorNumero(numero int) (interface{}, error) {
 }
 
 func (cc *ContaController) Atualizar(conta interface{}) error {
-	c, ok := conta.(Conta)
+	c, ok := conta.(IConta)
 	if !ok {
 		return errors.New("tipo de conta inválido")
 	}
@@ -125,7 +125,7 @@ func (cc *ContaController) Transferir(numeroOrigem, numeroDestino int, valor flo
 }
 
 // Método Auxiliar - Buscar Conta
-func (cc *ContaController) buscarConta(numero int) (Conta, error) {
+func (cc *ContaController) buscarConta(numero int) (IConta, error) {
 	for _, conta := range cc.contas {
 		if conta.GetNumero() == numero {
 			return conta, nil
