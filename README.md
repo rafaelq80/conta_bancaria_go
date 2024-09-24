@@ -207,7 +207,7 @@ IContaRepository ..> Conta : depende
 ## Print da Tela
 
 <div align="center">
-   <img src="https://i.imgur.com/xZMR67v.png" title="source: imgur.com" />
+   <img src="https://i.imgur.com/X5thCVQ.png" title="source: imgur.com" />
 </div>
 
 <br /><br />
