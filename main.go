@@ -14,6 +14,7 @@ import (
 	"github.com/rafaelq80/conta_bancaria_go/repository"
 )
 
+// Banco interface - Simula Polimorfismo
 type Banco interface {
     Visualizar()
 }
