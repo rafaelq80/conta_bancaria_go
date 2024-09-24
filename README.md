@@ -167,6 +167,7 @@ class IContaRepository{
 + Sacar(numero: int, valor: float64) error
 + Depositar(numero: int, valor: float64) error
 + Transferir(numeroOrigem: int, numeroDestino: int, valor: float64) error
++ BuscarPorTitular(titular string) ([]IConta, error)
 }
 class IConta{
 << Interface >>
