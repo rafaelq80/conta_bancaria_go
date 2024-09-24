@@ -3,6 +3,7 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/rafaelq80/conta_bancaria_go/repository"
 )
@@ -16,6 +17,7 @@ type ContaController struct {
 // Conta interface - Simula Polimorfismo
 type IConta interface {
 	GetNumero() int
+	GetTitular() string // Método Extra
 	SetNumero(int)
 	Sacar(float64) bool
 	Depositar(float64)
@@ -132,4 +134,24 @@ func (cc *ContaController) buscarConta(numero int) (IConta, error) {
 		}
 	}
 	return nil, fmt.Errorf("conta não encontrada: %d", numero)
+}
+
+// Método de Busca Extra
+func (cc *ContaController) BuscarPorTitular(titular string) ([]interface{}, error) {
+    var filteredContas []interface{}
+    lowercaseName := strings.ToLower(titular)
+
+    for _, conta := range cc.contas {
+        if c, ok := conta.(IConta); ok {
+            if strings.Contains(strings.ToLower(c.GetTitular()), lowercaseName) {
+                filteredContas = append(filteredContas, c)
+            }
+        }
+    }
+
+    if len(filteredContas) == 0 {
+        return nil, fmt.Errorf("não foram encontradas contas com o nome do titular contendo: %s", titular)
+    }
+
+    return filteredContas, nil
 }

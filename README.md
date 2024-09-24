@@ -171,6 +171,7 @@ class IContaRepository{
 class IConta{
 << Interface >>
 + GetNumero() int
++ GetTitular() string
 + SetNumero(int)
 + Sacar(float64) bool
 + Depositar(float64)
@@ -187,6 +188,7 @@ class ContaController{
 + Sacar(numero: int, valor: float64) error
 + Depositar(numero: int, valor: float64) error
 + Transferir(numeroOrigem: int, numeroDestino: int, valor: float64) error
++ BuscarPorTitular(titular string) ([]IConta, error)
 + buscarConta(numero: int) (IConta, error)
 }
 Conta <--* ContaCorrente : contém

@@ -17,6 +17,7 @@ import (
 // Banco interface - Simula Polimorfismo
 type Banco interface {
     Visualizar()
+	GetSaldo() float64
 }
 
 func main() {
@@ -32,24 +33,26 @@ func main() {
 		opcao := readOption()
 
 		switch opcao {
+		case 0:
+			encerrarPrograma()
 		case 1:
 			criarConta(contaController, reader)
 		case 2:
 			listarContas(contaController)
 		case 3:
-			consultarConta(contaController)
+			consultarContaPorNumero(contaController)
 		case 4:
 			atualizarConta(contaController, reader)
 		case 5:
-			apagarConta(contaController)
+			deletarConta(contaController)
 		case 6:
-			realizarSaque(contaController)
+			Sacar(contaController)
 		case 7:
-			realizarDeposito(contaController)
+			Depositar(contaController)
 		case 8:
-			realizarTransferencia(contaController)
+			Transferir(contaController)
 		case 9:
-			encerrarPrograma()
+			consultarContaPorTitular(contaController, reader)
 		default:
 			color.Set(color.FgRed, color.Bold)
 			fmt.Print("\nOpção Inválida!\n")
@@ -73,15 +76,18 @@ func exibirMenu() {
 	fmt.Println("\n*****************************************************")
 	fmt.Println("                BANCO DO BRAZIL COM Z                ")
 	fmt.Println("*****************************************************")
+	fmt.Println("                                                     ")
 	fmt.Println("            1 - Criar Conta                          ")
 	fmt.Println("            2 - Listar todas as Contas               ")
 	fmt.Println("            3 - Buscar Conta por Numero              ")
 	fmt.Println("            4 - Atualizar Dados da Conta             ")
-	fmt.Println("            5 - Apagar Conta                         ")
+	fmt.Println("            5 - deletar Conta                        ")
 	fmt.Println("            6 - Sacar                                ")
 	fmt.Println("            7 - Depositar                            ")
 	fmt.Println("            8 - Transferir valores entre Contas      ")
-	fmt.Println("            9 - Sair                                 ")
+	fmt.Println("            9 - Buscar Contas por Titular            ")
+	fmt.Println("            0 - Sair                                 ")
+	fmt.Println("                                                     ")
 	fmt.Println("*****************************************************")
 	color.Unset()
 }
@@ -144,7 +150,7 @@ func listarContas(contaController repository.IContaRepository) {
 	color.Cyan("\nTotal de Contas Cadastradas: %d", len(contas))
 }
 
-func consultarConta(contaController repository.IContaRepository) {
+func consultarContaPorNumero(contaController repository.IContaRepository) {
 
 	color.Set(color.FgYellow, color.Bold)
 	fmt.Print("\n\nConsultar dados da Conta - por número\n\n")
@@ -201,10 +207,10 @@ func atualizarConta(contaController repository.IContaRepository, reader *bufio.R
 	}
 }
 
-func apagarConta(contaController repository.IContaRepository) {
+func deletarConta(contaController repository.IContaRepository) {
 
 	color.Set(color.FgYellow, color.Bold)
-	fmt.Print("\n\nApagar uma Conta\n\n")
+	fmt.Print("\n\ndeletar uma Conta\n\n")
 	color.Unset()
 
 	numero := readInt("Digite o número da conta: ")
@@ -217,7 +223,7 @@ func apagarConta(contaController repository.IContaRepository) {
 	}
 }
 
-func realizarSaque(contaController repository.IContaRepository) {
+func Sacar(contaController repository.IContaRepository) {
 
 	color.Set(color.FgYellow, color.Bold)
 	fmt.Print("\n\nSaque\n\n")
@@ -231,11 +237,17 @@ func realizarSaque(contaController repository.IContaRepository) {
 	if err != nil {
 		color.Red("\n%s", err)
 	} else {
-		color.Green("\nO Saque no valor de R$ %.2f, foi realizado com sucesso!", valor)
+		conta, _ := contaController.BuscarPorNumero(numero)
+		if c, ok := conta.(Banco); ok {
+            novoSaldo := c.GetSaldo()
+			color.Green("\nO Saque no valor de R$ %.2f foi realizado com sucesso!\nO novo saldo da conta é de R$ %.2f", valor, novoSaldo)
+        } else {
+            color.Red("\nTipo de Conta Inválida")
+        }
 	}
 }
 
-func realizarDeposito(contaController repository.IContaRepository) {
+func Depositar(contaController repository.IContaRepository) {
 
 	color.Set(color.FgYellow, color.Bold)
 	fmt.Print("\n\nDepósito\n\n")
@@ -249,11 +261,17 @@ func realizarDeposito(contaController repository.IContaRepository) {
 	if err != nil {
 		color.Red("\n%s", err)
 	} else {
-		color.Green("\nO depósito de R$ %.2f, na conta Número %d, foi efetuado com sucesso!", valor, numero)
+		conta, _ := contaController.BuscarPorNumero(numero)
+		if c, ok := conta.(Banco); ok {
+            novoSaldo := c.GetSaldo()
+			color.Green("\nO Depósito no valor de R$ %.2f foi realizado com sucesso!\nO novo saldo da conta é de R$ %.2f", valor, novoSaldo)
+        } else {
+            color.Red("\nTipo de Conta Inválida")
+        }
 	}
 }
 
-func realizarTransferencia(contaController repository.IContaRepository) {
+func Transferir(contaController repository.IContaRepository) {
 	
 	color.Set(color.FgYellow, color.Bold)
 	fmt.Print("\n\nTransferência entre Contas\n\n")
@@ -268,7 +286,34 @@ func realizarTransferencia(contaController repository.IContaRepository) {
 	if err != nil {
 		color.Red("\n%s", err)
 	} else {
-		color.Green("\nA Transferência no valor de R$ %.2f, para a conta Número %d, foi efetuada com sucesso!", valor, numeroDestino)
+		conta, _ := contaController.BuscarPorNumero(numeroOrigem)
+		if c, ok := conta.(Banco); ok {
+            novoSaldo := c.GetSaldo()
+			color.Green("\nA Transferência no valor de R$ %.2f foi realizada com sucesso!\nO novo saldo da conta de origem é de R$ %.2f", valor, novoSaldo)
+        } else {
+            color.Red("\nTipo de Conta Inválida")
+        }
+	}
+}
+
+// Método de Busca Extra
+func consultarContaPorTitular(contaController repository.IContaRepository, reader *bufio.Reader) {
+
+	color.Set(color.FgYellow, color.Bold)
+	fmt.Print("\n\nConsultar dados da Conta - por número\n\n")
+	color.Unset()
+
+	titular := readString(reader, "\nDigite o nome do titular da conta: ")
+	contas, err := contaController.BuscarPorTitular(titular)
+	
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		for _, conta := range contas {
+			if c, ok := conta.(Banco); ok {
+				c.Visualizar()
+			}
+		}
 	}
 }
 
